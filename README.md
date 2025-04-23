@@ -34,6 +34,11 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 
 ---
 
+## 🚧 Future Improvements
+- Product reviews & ratings
+- Admin dashboard integration
+- Wishlist & saved items
+
 ## 📦 Getting Started
 
 ### Prerequisites
@@ -52,9 +57,4 @@ cd E_commerce
 # Install dependencies
 npm install
 
----
 
-## 🚧 Future Improvements
-- Product reviews & ratings
-- Admin dashboard integration
-- Wishlist & saved items
