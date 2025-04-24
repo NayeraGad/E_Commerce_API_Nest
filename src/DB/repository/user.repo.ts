@@ -17,6 +17,7 @@ export class UserRepoService extends DatabaseRepo<UserDocument> {
     const user = await this.findOne({
       email,
       confirmed: { $exists: true },
+      isDeleted: { $exists: false },
     });
 
     if (!user) throw new NotFoundException('User not found');

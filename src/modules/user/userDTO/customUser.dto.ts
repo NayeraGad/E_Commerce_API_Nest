@@ -72,3 +72,41 @@ export class loginDTO {
   @IsNotEmpty()
   password: string;
 }
+
+export class forgetPasswordDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+}
+
+export class resetPasswordDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsStrongPassword()
+  password: string;
+
+  @IsNotEmpty()
+  @customPasswordDecorator({ message: 'Passwords not match' })
+  cPassword: string;
+
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+}
+
+export class updatePasswordDTO {
+  @IsNotEmpty()
+  @IsString()
+  oldPassword: string;
+
+  @IsStrongPassword()
+  @IsNotEmpty()
+  password: string;
+
+  @IsNotEmpty()
+  @customPasswordDecorator({ message: 'Passwords not match' })
+  cPassword: string;
+}

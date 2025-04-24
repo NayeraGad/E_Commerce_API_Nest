@@ -27,8 +27,6 @@ export class AuthGuard implements CanActivate {
 
     const { type, token } = this.extractTokenFromHeader(request);
 
-    if (!token || !type) throw new UnauthorizedException('Token not found');
-
     try {
       const payload = await this.TokenService.verifyToken({
         token,
@@ -56,6 +54,8 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): AuthorizationType {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
+
+    if (!token || !type) throw new UnauthorizedException('Token not found');
 
     if (type !== TokenTypes.Admin && type !== TokenTypes.Bearer) {
       throw new UnauthorizedException('Invalid token prefix');

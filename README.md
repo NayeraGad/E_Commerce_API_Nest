@@ -35,9 +35,12 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 ---
 
 ## 🚧 Future Improvements
+
 - Product reviews & ratings
 - Admin dashboard integration
 - Wishlist & saved items
+
+---
 
 ## 📦 Getting Started
 
@@ -52,9 +55,10 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 ```bash
 # Clone the repo
 git clone https://github.com/NayeraGad/e_commerce_nestJS.git
-cd E_commerce
+cd e_commerce_nestJS
 
 # Install dependencies
 npm install
 
 
+```

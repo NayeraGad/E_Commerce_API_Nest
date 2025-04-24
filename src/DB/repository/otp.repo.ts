@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -44,6 +45,10 @@ export class OTPRepoService extends DatabaseRepo<OTPDocument> {
 
     if (!Compare({ plainText: code, hashedText: otp.code }))
       throw new ForbiddenException('Invalid code');
+
+    if (new Date() > otp.expiresAt) {
+      throw new BadRequestException('Code expired');
+    }
 
     return otp;
   }

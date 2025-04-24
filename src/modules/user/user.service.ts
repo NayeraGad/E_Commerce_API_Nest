@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -7,7 +6,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { OTPRepoService, UserRepoService } from '../../DB/repository/index';
-import { ConfirmEmailDTO, loginDTO, SignUpDTO } from './userDTO/customUser.dto';
+import {
+  ConfirmEmailDTO,
+  forgetPasswordDTO,
+  loginDTO,
+  resetPasswordDTO,
+  SignUpDTO,
+  updatePasswordDTO,
+} from './userDTO/customUser.dto';
 import {
   Compare,
   html,
@@ -16,6 +22,7 @@ import {
   TokenService,
   UserRoles,
 } from '../../common/index.js';
+import { UserDocument } from 'src/DB/models/usersModel.js';
 
 @Injectable()
 export class UserService {
@@ -68,7 +75,7 @@ export class UserService {
     }
   }
 
-  // ************************confirmEmail**************************
+  // ************************Confirm Email**************************
   async confirmEmail(body: ConfirmEmailDTO) {
     const { email, code } = body;
 
@@ -86,10 +93,6 @@ export class UserService {
       code,
     });
 
-    if (new Date() > otp.expiresAt) {
-      throw new BadRequestException('Code expired');
-    }
-
     await this.UserRepoService.findOneAndUpdate(
       { _id: user._id },
       { confirmed: true },
@@ -100,7 +103,7 @@ export class UserService {
     return { message: 'done' };
   }
 
-  // ************************login**************************
+  // ************************Login**************************
   async login(body: loginDTO) {
     const { email, password } = body;
 
@@ -147,5 +150,74 @@ export class UserService {
           });
 
     return { message: 'done', token: { access_token, refresh_token } };
+  }
+
+  // ************************Forget Password**************************
+  async forgetPassword(body: forgetPasswordDTO) {
+    const { email } = body;
+
+    const user = await this.UserRepoService.emailExists({ email });
+
+    // Create OTP code
+    const code = Math.floor(Math.random() * (99999 + 9)).toString();
+
+    await this.OTPRepoService.createOTP({
+      code,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      otpType: otpTypes.forgetPassword,
+      userId: user._id,
+    });
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Forget Password',
+      html: html({ code, message: 'Forget Password Code' }),
+    });
+
+    return { message: 'done' };
+  }
+
+  // ************************Reset Password**************************
+  async resetPassword(body: resetPasswordDTO) {
+    const { email, password, code } = body;
+
+    const user = await this.UserRepoService.emailExists({ email });
+
+    const otp = await this.OTPRepoService.otpExists({
+      code,
+      userId: user._id,
+      otpType: otpTypes.forgetPassword,
+    });
+
+    await this.UserRepoService.findOneAndUpdate(
+      { _id: user._id },
+      {
+        password,
+        passwordChangedAt: new Date(),
+      },
+    );
+
+    await this.OTPRepoService.findOneAndDelete({ _id: otp._id });
+
+    return { message: 'done' };
+  }
+
+  // ************************Update Password**************************
+  async updatePassword(body: updatePasswordDTO, user: UserDocument) {
+    const { oldPassword, password } = body;
+
+    if (!Compare({ plainText: oldPassword, hashedText: user.password })) {
+      throw new ForbiddenException('Incorrect password');
+    }
+
+    await this.UserRepoService.findOneAndUpdate(
+      { _id: user._id },
+      {
+        password,
+        passwordChangedAt: new Date(),
+      },
+    );
+
+    return { user };
   }
 }

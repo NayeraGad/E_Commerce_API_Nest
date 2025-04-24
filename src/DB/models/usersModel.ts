@@ -48,6 +48,9 @@ export class User {
 
   @Prop({ type: Boolean })
   isDeleted: boolean;
+
+  @Prop({ type: Date })
+  passwordChangedAt: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -59,6 +62,18 @@ UserSchema.pre('save', function (next) {
 
   if (this.isDirectModified('phone')) {
     this.phone = Encrypt({ plainText: this.phone });
+  }
+
+  next();
+});
+
+UserSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+
+  if (!update || Array.isArray(update)) return next();
+
+  if (update.password) {
+    update.password = Hash({ plainText: update.password });
   }
 
   next();

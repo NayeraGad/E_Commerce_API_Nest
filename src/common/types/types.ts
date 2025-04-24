@@ -31,6 +31,5 @@ export enum TokenTypes {
 
 export enum otpTypes {
   confirmation = 'confirmation',
-  resetPassword = 'resetPassword',
   forgetPassword = 'forgetPassword',
 }
