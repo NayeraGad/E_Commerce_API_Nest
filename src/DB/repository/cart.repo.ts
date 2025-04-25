@@ -17,10 +17,11 @@ export class CartRepoService extends DatabaseRepo<CartDocument> {
     query: FilterQuery<CartDocument>,
     populate?: PopulateOptions | PopulateOptions[],
   ): Promise<CartDocument> {
-    const Cart = await this.findOne(query, populate);
+    const cart = await this.findOne(query, populate);
 
-    if (!Cart) throw new NotFoundException('Cart not found');
+    if (!cart || !cart.products.length)
+      throw new NotFoundException('Cart not found');
 
-    return Cart;
+    return cart;
   }
 }

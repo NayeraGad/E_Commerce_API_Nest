@@ -9,6 +9,7 @@ import { TokenService } from '../service/token.js';
 import { UserRepoService } from '../../DB/repository/user.repo.js';
 import { Request } from 'express';
 import { TokenTypes } from '../types/types.js';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
 type AuthorizationType = {
   type: TokenTypes;
@@ -23,7 +24,13 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    let request: any;
+
+    if (context['contextType'] === 'http') {
+      request = context.switchToHttp().getRequest();
+    } else if (context['contextType'] === 'graphql') {
+      request = GqlExecutionContext.create(context).getContext().req;
+    }
 
     const { type, token } = this.extractTokenFromHeader(request);
 
@@ -49,6 +56,7 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
+
     return true;
   }
 

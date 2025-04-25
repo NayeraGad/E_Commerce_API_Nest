@@ -3,6 +3,7 @@ import {
   CartRepoService,
   CouponRepoService,
   OrderRepoService,
+  ProductRepoService,
 } from '../../DB/repository/index';
 import { createOrderDTO } from './orderDTO/index';
 import { UserDocument } from '../../DB/models/usersModel';
@@ -27,9 +28,10 @@ export class OrderService {
     private readonly _CartRepoService: CartRepoService,
     private readonly _PaymentService: PaymentService,
     private readonly _CouponRepoService: CouponRepoService,
+    private readonly _ProductRepoService: ProductRepoService,
   ) {}
 
-  // ************************createOrder**************************
+  // ************************Create Order**************************
   async createOrder(body: createOrderDTO, user: UserDocument) {
     const { phone, address, paymentMethod, code } = body;
     const { _id: userId } = user;
@@ -59,10 +61,30 @@ export class OrderService {
       coupon: coupon ? coupon._id : undefined,
     });
 
+    // Decrease product stock
+    for (const product of cart.products) {
+      await this._ProductRepoService.findOneAndUpdate(
+        { _id: product.productId },
+        { $inc: { stock: -product.quantity } },
+      );
+    }
+
+    // Clear cart
+    await this._CartRepoService.findOneAndUpdate(
+      { userId },
+      { $set: { products: [], total: 0 } },
+    );
+
+    // Add user to usedBy of coupon if payment method is cash
+    if (paymentMethod === paymentMethodTypes.cash) {
+      coupon?.usedBy.push(userId);
+      await coupon?.save();
+    }
+
     return { message: 'done', order };
   }
 
-  // ************************payWithCard**************************
+  // ************************Pay With Card**************************
   async payWithCard(id: Types.ObjectId, user: UserDocument) {
     const { _id: userId, email } = user;
 
@@ -117,7 +139,23 @@ export class OrderService {
       discounts: coupon ? [{ coupon: coupon.id }] : [],
     });
 
-    // Add user to usedBy of coupon model
+    // Clear cart
+    await this._CartRepoService.findOneAndUpdate(
+      { userId },
+      { $set: { products: [], total: 0 } },
+    );
+
+    // Decrease product stock
+    for (const product of order.cart['products']) {
+      await this._CartRepoService.findOneAndUpdate(
+        { _id: order.cart._id, 'products.productId': product.productId },
+        {
+          $inc: { 'products.$.stock': -product.quantity },
+        },
+      );
+    }
+
+    // Add user to usedBy of coupon
     cartCoupon?.usedBy.push(userId);
     await cartCoupon?.save();
 
@@ -130,7 +168,7 @@ export class OrderService {
     return { message: 'done', session: session.url };
   }
 
-  // ************************webhook**************************
+  // ************************Webhook**************************
   async webhook(data: any) {
     const { orderId } = data.data.object.metadata;
     const { payment_intent } = data.data.object;
@@ -151,7 +189,7 @@ export class OrderService {
     return { message: 'done', order };
   }
 
-  // ************************cancelOrder**************************
+  // ************************Cancel Order**************************
   async cancelOrder(id: Types.ObjectId, user: UserDocument) {
     const order = await this._OrderRepoService.findOneAndUpdate(
       {
@@ -197,5 +235,10 @@ export class OrderService {
     }
 
     return { message: 'done', order };
+  }
+
+  // ************************Get All Orders**************************
+  async getAllOrders() {
+    return await this._OrderRepoService.find({ populate: [{ path: 'cart' }] });
   }
 }

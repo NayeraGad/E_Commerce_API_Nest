@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Param,
   Patch,
@@ -54,5 +55,11 @@ export class OrderController {
     @UserDecorator() user: UserDocument,
   ) {
     return this._OrderService.cancelOrder(id, user);
+  }
+
+  // Get all orders
+  @Get('')
+  async getAllOrders() {
+    return this._OrderService.getAllOrders();
   }
 }

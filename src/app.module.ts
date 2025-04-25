@@ -15,6 +15,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { GlobalModule } from './global.module.js';
 import { CoreModule } from './core/core.module.js';
+import { GraphQLConfigModule } from './graphql/graphql.config.js';
 
 @Module({
   imports: [
@@ -47,6 +48,9 @@ import { CoreModule } from './core/core.module.js';
     CouponModule,
     CartModule,
     OrderModule,
+
+    // GraphQl
+    GraphQLConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
