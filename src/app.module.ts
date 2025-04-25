@@ -14,13 +14,17 @@ import {
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { GlobalModule } from './global.module.js';
+import { CoreModule } from './core/core.module.js';
 
 @Module({
   imports: [
+    // .env config
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: './config/.env',
     }),
+
+    // Database connection
     MongooseModule.forRoot(process.env.URI as string, {
       onConnectionCreate(connection) {
         connection.on('connected', () => {
@@ -29,6 +33,11 @@ import { GlobalModule } from './global.module.js';
         });
       },
     }),
+
+    // Caching
+    CoreModule,
+
+    // App modules
     GlobalModule,
     UserModule,
     CategoryModule,

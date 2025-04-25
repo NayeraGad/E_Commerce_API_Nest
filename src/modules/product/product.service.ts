@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   CreateProductDTO,
   QueryDTO,
@@ -13,6 +13,8 @@ import {
 } from '../../DB/repository/index';
 import { FileUploadService } from '../../common/index';
 import { FilterQuery, Types } from 'mongoose';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProductService {
@@ -22,6 +24,7 @@ export class ProductService {
     private readonly _CategoryRepoService: CategoryRepoService,
     private readonly _SubCategoryRepoService: SubCategoryRepoService,
     private readonly _BrandRepoService: BrandRepoService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
   // ************************createProduct**************************
@@ -187,28 +190,38 @@ export class ProductService {
   async getAllProducts(query: QueryDTO) {
     const { name, select, sort, limit, page } = query;
 
-    let filterObject: FilterQuery<ProductDocument> = {};
+    // Unique key based on query
+    const cacheKey = `list?${name || ''}&${select || ''}&${sort || ''}&${limit || ''}&${page || ''}`;
 
-    if (name) {
-      filterObject = {
-        $or: [{ name: { $regex: name } }, { slug: { $regex: name } }],
-      };
+    const products = await this.cacheManager.get(cacheKey);
+
+    if (!products) {
+      let filterObject: FilterQuery<ProductDocument> = {};
+
+      if (name) {
+        filterObject = {
+          $or: [{ name: { $regex: name } }, { slug: { $regex: name } }],
+        };
+      }
+
+      const products = await this._ProductRepoService.find({
+        filter: filterObject,
+        populate: [
+          { path: 'category', select: { name: 1 } },
+          { path: 'subCategory', select: { name: 1 } },
+          { path: 'brand', select: { name: 1 } },
+        ],
+        sort,
+        select,
+        limit,
+        page,
+      });
+
+      if (!products?.length)
+        throw new BadRequestException('No products add yet');
+
+      await this.cacheManager.set(cacheKey, products);
     }
-
-    const products = await this._ProductRepoService.find({
-      filter: filterObject,
-      populate: [
-        { path: 'category', select: { name: 1 } },
-        { path: 'subCategory', select: { name: 1 } },
-        { path: 'brand', select: { name: 1 } },
-      ],
-      sort,
-      select,
-      limit,
-      page,
-    });
-
-    if (!products?.length) throw new BadRequestException('No products add yet');
 
     return { message: 'done', products };
   }
