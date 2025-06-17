@@ -47,8 +47,8 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/NayeraGad/e_commerce_nestJS.git
-cd e_commerce_nestJS
+git clone https://github.com/NayeraGad/E_Commerce_API_Nest.git
+cd E_Commerce_API_Nest
 ```
 
 ### 2. Install dependencies
