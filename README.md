@@ -4,7 +4,7 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
 - ✅ RESTful API architecture
 - 🛍️ Product management (CRUD, categories, inventory)
@@ -13,7 +13,7 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 - 🛒 Cart and order system
 - 💳 Payment integration ready (Stripe)
 - 🎟️ Discount and coupon system
-- 🔐 Role-based access control (Admin, Customer)
+- 🔐 Role-based access control (Admin, User)
 - 📦 File upload support (Cloudinary ready)
 - 📊 Pagination, filtering, and sorting
 - 🔍 GraphQL support (in addition to REST)
@@ -42,23 +42,53 @@ A full-featured E-Commerce backend API built using [NestJS](https://nestjs.com/)
 
 ---
 
-## 📦 Getting Started
+## 🚀 Getting Started Locally
 
-### Prerequisites
-
-- Node.js (v22.14.0)
-- MongoDB (local or Atlas)
-- npm
-
-### Installation
+### 1. Clone the repository
 
 ```bash
-# Clone the repo
 git clone https://github.com/NayeraGad/e_commerce_nestJS.git
 cd e_commerce_nestJS
+```
 
-# Install dependencies
+### 2. Install dependencies
+```bash
 npm install
-
+```
 
 ```
+PORT=3000
+
+# MongoDB Connection
+URI=your_mongodb_connection_string
+
+# Encryption
+SALT_ROUNDS=your_salt_round_value
+SECRET_KEY=your_super_secret_key
+
+# Email Configuration 
+EMAIL=your_email@example.com
+PASSWORD=your_email_app_password
+
+# Token
+SIGNATURE_ACCESS_USER=user_access_token_secret
+SIGNATURE_ACCESS_ADMIN=admin_access_token_secret
+SIGNATURE_REFRESH_USER=user_refresh_token_secret
+SIGNATURE_REFRESH_ADMIN=admin_refresh_token_secret
+
+# Cloudinary
+CLOUD_NAME=your_cloudinary_cloud_name
+CLOUD_API_KEY=your_cloudinary_api_key
+CLOUD_API_SECRET=your_cloudinary_api_secret
+CLOUDINARY_FOLDER=your_folder_name
+
+# Stripe
+STRIPE_SECRET=your_stripe_secret_key
+```
+---
+
+## 📫 API Documentation
+📘 **Postman Collection (Demo)**  
+> Even though the app is not deployed, you can still explore and test the endpoints via the Postman documentation:
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://documenter.getpostman.com/view/36251048/2sB2cPjkcn)
